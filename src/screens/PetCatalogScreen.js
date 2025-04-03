@@ -20,60 +20,6 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getPets, getAnimalTypes } from "../services/petfinderApi";
 
-// Dados estáticos para usar como fallback caso a API falhe
-const staticPets = [
-  {
-    id: 1,
-    name: "Thor",
-    type: "Cachorro",
-    breed: "Labrador",
-    age: "2 anos",
-    gender: "Macho",
-    image: require("../../assets/images/dog1.png"),
-    description:
-      "Thor é um labrador muito brincalhão e adora crianças. Ele já está castrado e vacinado.",
-    location: "São Paulo, SP",
-  },
-  {
-    id: 2,
-    name: "Luna",
-    type: "Cachorro",
-    breed: "Vira-lata",
-    age: "1 ano",
-    gender: "Fêmea",
-    image: require("../../assets/images/dog2.png"),
-    description:
-      "Luna é uma cadela muito dócil e carinhosa. Ela se dá bem com outros animais e adora passear.",
-    location: "Rio de Janeiro, RJ",
-  },
-  {
-    id: 3,
-    name: "Mia",
-    type: "Gato",
-    breed: "Siamês",
-    age: "3 anos",
-    gender: "Fêmea",
-    image: require("../../assets/images/pet1.png"),
-    description:
-      "Mia é uma gata muito independente e curiosa. Ela adora brincar com bolinhas e observar pássaros pela janela.",
-    location: "Belo Horizonte, MG",
-  },
-  {
-    id: 4,
-    name: "Max",
-    type: "Cachorro",
-    breed: "Golden Retriever",
-    age: "4 anos",
-    gender: "Macho",
-    image: require("../../assets/images/pet1.png"),
-    description:
-      "Max é um cachorro muito inteligente e treinado. Ele é ótimo com crianças e idosos.",
-    location: "Curitiba, PR",
-  },
-];
-
-const staticAnimalTypes = ["Todos", "Cachorro", "Gato"];
-
 export default function PetCatalogScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("Todos");
@@ -81,8 +27,7 @@ export default function PetCatalogScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [animalTypes, setAnimalTypes] = useState(staticAnimalTypes);
-  const [useStaticData, setUseStaticData] = useState(false);
+  const [animalTypes, setAnimalTypes] = useState(["Todos", "Cachorro", "Gato"]);
 
   // Função para buscar animais da API
   const fetchPets = async (type = null) => {
@@ -107,28 +52,25 @@ export default function PetCatalogScreen({ navigation }) {
       const response = await getPets(params);
 
       // Mapear os dados da API para o formato do nosso app
-      const formattedPets = response.animals.map((pet) => ({
-        id: pet.id,
-        name: pet.name,
-        type: pet.type,
-        breed: pet.breeds.primary || "Misturado",
-        age: pet.age,
-        gender: pet.gender === "male" ? "Macho" : "Fêmea",
-        image: pet.photos.length > 0 ? { uri: pet.photos[0].medium } : null,
-        description: pet.description || "Sem descrição disponível.",
-        location: pet.contact.address.city + ", " + pet.contact.address.state,
-        url: pet.url,
-      }));
+      const formattedPets = response.animals
+        .filter((pet) => pet.photos && pet.photos.length > 0) // Filtrar apenas pets com fotos
+        .map((pet) => ({
+          id: pet.id,
+          name: pet.name,
+          type: pet.type,
+          breed: pet.breeds.primary || "Misturado",
+          age: pet.age,
+          gender: pet.gender === "male" ? "Macho" : "Fêmea",
+          image: { uri: pet.photos[0].medium },
+          description: pet.description || "Sem descrição disponível.",
+          location: pet.contact.address.city + ", " + pet.contact.address.state,
+          url: pet.url,
+        }));
 
       setPets(formattedPets);
-      setUseStaticData(false);
     } catch (err) {
       console.error("Erro ao buscar animais:", err);
-      setError(
-        "Não foi possível carregar os animais da API. Usando dados locais."
-      );
-      setPets(staticPets);
-      setUseStaticData(true);
+      setError("Não foi possível carregar os animais da API.");
     } finally {
       setLoading(false);
     }
@@ -142,8 +84,6 @@ export default function PetCatalogScreen({ navigation }) {
       setAnimalTypes(types);
     } catch (err) {
       console.error("Erro ao buscar tipos de animais:", err);
-      // Usar tipos padrão em caso de erro
-      setAnimalTypes(staticAnimalTypes);
     }
   };
 
@@ -188,7 +128,7 @@ export default function PetCatalogScreen({ navigation }) {
       );
     }
 
-    if (error && !useStaticData) {
+    if (error) {
       return (
         <View style={styles.errorContainer}>
           <MaterialCommunityIcons
@@ -223,28 +163,9 @@ export default function PetCatalogScreen({ navigation }) {
 
     return (
       <ScrollView style={styles.petList}>
-        {useStaticData && (
-          <View style={styles.staticDataNotice}>
-            <MaterialCommunityIcons
-              name="information"
-              size={20}
-              color="#6B4EFF"
-            />
-            <Text style={styles.staticDataText}>
-              Usando dados locais devido a problemas de conexão com a API.
-            </Text>
-          </View>
-        )}
         {filteredPets.map((pet) => (
           <Card key={pet.id} style={styles.petCard}>
-            {pet.image ? (
-              <Card.Cover source={pet.image} style={styles.petImage} />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <MaterialCommunityIcons name="paw" size={50} color="#6B4EFF" />
-                <Text style={styles.noImageText}>Sem foto disponível</Text>
-              </View>
-            )}
+            <Card.Cover source={pet.image} style={styles.petImage} />
             <Card.Content>
               <Title style={styles.petName}>{pet.name}</Title>
               <View style={styles.petInfo}>
@@ -436,30 +357,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptyText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  staticDataNotice: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E8E5FF",
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  staticDataText: {
-    marginLeft: 5,
-    color: "#6B4EFF",
-    fontSize: 12,
-  },
-  imagePlaceholder: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  noImageText: {
     marginTop: 10,
     fontSize: 16,
     color: "#666",

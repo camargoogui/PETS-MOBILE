@@ -42,17 +42,19 @@ export default function HomeScreen({ navigation }) {
       const response = await getPets(params);
 
       // Mapear os dados da API para o formato do nosso app
-      const formattedPets = response.animals.map((pet) => ({
-        id: pet.id,
-        name: pet.name,
-        type: pet.type,
-        breed: pet.breeds.primary || "Misturado",
-        age: pet.age,
-        gender: pet.gender === "male" ? "Macho" : "Fêmea",
-        image: pet.photos.length > 0 ? { uri: pet.photos[0].medium } : null,
-        description: pet.description || "Sem descrição disponível.",
-        location: pet.contact.address.city + ", " + pet.contact.address.state,
-      }));
+      const formattedPets = response.animals
+        .filter((pet) => pet.photos && pet.photos.length > 0) // Filtrar apenas pets com fotos
+        .map((pet) => ({
+          id: pet.id,
+          name: pet.name,
+          type: pet.type,
+          breed: pet.breeds.primary || "Misturado",
+          age: pet.age,
+          gender: pet.gender === "male" ? "Macho" : "Fêmea",
+          image: { uri: pet.photos[0].medium },
+          description: pet.description || "Sem descrição disponível.",
+          location: pet.contact.address.city + ", " + pet.contact.address.state,
+        }));
 
       setFeaturedPets(formattedPets);
     } catch (err) {
@@ -114,23 +116,7 @@ export default function HomeScreen({ navigation }) {
             >
               {featuredPets.map((pet) => (
                 <Card key={pet.id} style={styles.featuredCard}>
-                  {pet.image ? (
-                    <Card.Cover
-                      source={pet.image}
-                      style={styles.featuredImage}
-                    />
-                  ) : (
-                    <View style={styles.imagePlaceholder}>
-                      <MaterialCommunityIcons
-                        name="paw"
-                        size={50}
-                        color="#6B4EFF"
-                      />
-                      <Text style={styles.noImageText}>
-                        Sem foto disponível
-                      </Text>
-                    </View>
-                  )}
+                  <Card.Cover source={pet.image} style={styles.featuredImage} />
                   <Card.Content>
                     <Title style={styles.petName}>{pet.name}</Title>
                     <Paragraph style={styles.petInfo}>
@@ -180,60 +166,7 @@ export default function HomeScreen({ navigation }) {
               </Paragraph>
             </Card.Content>
           </Card>
-
-          <Card
-            style={styles.navCard}
-            onPress={() => navigation.navigate("Formulário")}
-          >
-            <Card.Content>
-              <MaterialCommunityIcons name="heart" size={40} color="#6B4EFF" />
-              <Title style={styles.navTitle}>Quero Adotar</Title>
-              <Paragraph style={styles.navText}>
-                Preencha o formulário de adoção
-              </Paragraph>
-            </Card.Content>
-          </Card>
         </View>
-
-        <View style={styles.infoSection}>
-          <Title style={styles.sectionTitle}>Por que adotar?</Title>
-          <Card style={styles.infoCard}>
-            <Card.Content>
-              <View style={styles.infoItem}>
-                <MaterialCommunityIcons
-                  name="heart"
-                  size={24}
-                  color="#6B4EFF"
-                />
-                <Paragraph style={styles.infoText}>
-                  Amor incondicional e companhia
-                </Paragraph>
-              </View>
-              <View style={styles.infoItem}>
-                <MaterialCommunityIcons
-                  name="home-heart"
-                  size={24}
-                  color="#6B4EFF"
-                />
-                <Paragraph style={styles.infoText}>
-                  Um lar amoroso para um pet
-                </Paragraph>
-              </View>
-              <View style={styles.infoItem}>
-                <MaterialCommunityIcons
-                  name="hand-heart"
-                  size={24}
-                  color="#6B4EFF"
-                />
-                <Paragraph style={styles.infoText}>
-                  Faça a diferença na vida de um animal
-                </Paragraph>
-              </View>
-            </Card.Content>
-          </Card>
-        </View>
-
-        <Divider style={styles.divider} />
 
         <View style={styles.statsSection}>
           <Card style={styles.statsCard}>
@@ -365,33 +298,6 @@ const styles = StyleSheet.create({
   navText: {
     color: "#666",
   },
-  infoSection: {
-    padding: 20,
-    backgroundColor: "#FFFFFF",
-    margin: 20,
-    borderRadius: 15,
-  },
-  infoCard: {
-    margin: 15,
-    borderRadius: 10,
-    elevation: 4,
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  infoText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: "#333",
-    flex: 1,
-  },
-  divider: {
-    backgroundColor: "#E0E0E0",
-    height: 1,
-    marginHorizontal: 20,
-  },
   statsSection: {
     padding: 20,
     backgroundColor: "#FFFFFF",
@@ -467,16 +373,5 @@ const styles = StyleSheet.create({
   retryButton: {
     backgroundColor: "#6B4EFF",
     borderRadius: 8,
-  },
-  imagePlaceholder: {
-    height: 150,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-  },
-  noImageText: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 10,
   },
 });

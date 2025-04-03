@@ -1,5 +1,11 @@
-import React from "react";
-import { View, ScrollView, Image, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  ScrollView,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import {
   Text,
   Card,
@@ -11,8 +17,57 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { getPets } from "../services/petfinderApi";
 
 export default function HomeScreen({ navigation }) {
+  const [featuredPets, setFeaturedPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Função para buscar animais em destaque da API
+  const fetchFeaturedPets = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Parâmetros para a API - limitando a 3 animais para a seção de destaques
+      const params = {
+        limit: 3,
+        page: 1,
+        sort: "recent",
+        status: "adoptable",
+      };
+
+      // Buscar animais da API
+      const response = await getPets(params);
+
+      // Mapear os dados da API para o formato do nosso app
+      const formattedPets = response.animals.map((pet) => ({
+        id: pet.id,
+        name: pet.name,
+        type: pet.type,
+        breed: pet.breeds.primary || "Misturado",
+        age: pet.age,
+        gender: pet.gender === "male" ? "Macho" : "Fêmea",
+        image: pet.photos.length > 0 ? { uri: pet.photos[0].medium } : null,
+        description: pet.description || "Sem descrição disponível.",
+        location: pet.contact.address.city + ", " + pet.contact.address.state,
+      }));
+
+      setFeaturedPets(formattedPets);
+    } catch (err) {
+      console.error("Erro ao buscar animais em destaque:", err);
+      setError("Não foi possível carregar os animais em destaque.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carregar dados iniciais
+  useEffect(() => {
+    fetchFeaturedPets();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" backgroundColor="#6B4EFF" />
@@ -30,50 +85,69 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.featuredSection}>
           <Title style={styles.sectionTitle}>Destaques da Semana</Title>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.featuredScroll}
-          >
-            <Card style={styles.featuredCard}>
-              <Card.Cover
-                source={require("../../assets/images/dog1.png")}
-                style={styles.featuredImage}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#6B4EFF" />
+              <Text style={styles.loadingText}>Carregando destaques...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <MaterialCommunityIcons
+                name="alert-circle"
+                size={50}
+                color="#FF6B6B"
               />
-              <Card.Content>
-                <Title style={styles.petName}>Thor</Title>
-                <Paragraph style={styles.petInfo}>
-                  Labrador • 2 anos • Macho
-                </Paragraph>
-                <Button
-                  mode="contained"
-                  onPress={() => navigation.navigate("Formulário")}
-                  style={styles.adoptButton}
-                >
-                  Quero Adotar
-                </Button>
-              </Card.Content>
-            </Card>
-            <Card style={styles.featuredCard}>
-              <Card.Cover
-                source={require("../../assets/images/dog2.png")}
-                style={styles.featuredImage}
-              />
-              <Card.Content>
-                <Title style={styles.petName}>Luna</Title>
-                <Paragraph style={styles.petInfo}>
-                  Vira-lata • 1 ano • Fêmea
-                </Paragraph>
-                <Button
-                  mode="contained"
-                  onPress={() => navigation.navigate("Formulário")}
-                  style={styles.adoptButton}
-                >
-                  Quero Adotar
-                </Button>
-              </Card.Content>
-            </Card>
-          </ScrollView>
+              <Text style={styles.errorText}>{error}</Text>
+              <Button
+                mode="contained"
+                onPress={fetchFeaturedPets}
+                style={styles.retryButton}
+              >
+                Tentar Novamente
+              </Button>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.featuredScroll}
+            >
+              {featuredPets.map((pet) => (
+                <Card key={pet.id} style={styles.featuredCard}>
+                  {pet.image ? (
+                    <Card.Cover
+                      source={pet.image}
+                      style={styles.featuredImage}
+                    />
+                  ) : (
+                    <View style={styles.imagePlaceholder}>
+                      <MaterialCommunityIcons
+                        name="paw"
+                        size={50}
+                        color="#6B4EFF"
+                      />
+                      <Text style={styles.noImageText}>
+                        Sem foto disponível
+                      </Text>
+                    </View>
+                  )}
+                  <Card.Content>
+                    <Title style={styles.petName}>{pet.name}</Title>
+                    <Paragraph style={styles.petInfo}>
+                      {pet.breed} • {pet.age} • {pet.gender}
+                    </Paragraph>
+                    <Button
+                      mode="contained"
+                      onPress={() => navigation.navigate("Formulário")}
+                      style={styles.adoptButton}
+                    >
+                      Quero Adotar
+                    </Button>
+                  </Card.Content>
+                </Card>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         <View style={styles.navigationSection}>
@@ -191,6 +265,15 @@ export default function HomeScreen({ navigation }) {
             icon="phone"
           >
             Fale Conosco
+          </Button>
+
+          <Button
+            mode="outlined"
+            onPress={() => navigation.navigate("Team")}
+            style={styles.teamButton}
+            icon="account-group"
+          >
+            Nossa Equipe
           </Button>
         </View>
       </ScrollView>
@@ -346,6 +429,54 @@ const styles = StyleSheet.create({
     backgroundColor: "#6B4EFF",
     width: "100%",
     marginTop: 10,
+    marginBottom: 10,
+  },
+  teamButton: {
+    borderColor: "#6B4EFF",
+    width: "100%",
     marginBottom: 30,
+  },
+  loadingContainer: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#6B4EFF",
+    marginTop: 10,
+  },
+  errorContainer: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF5F5",
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#FF6B6B",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#6B4EFF",
+    borderRadius: 8,
+  },
+  imagePlaceholder: {
+    height: 150,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  noImageText: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 10,
   },
 });

@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabRoutes from "./index";
 import AdoptionFormScreen from "../screens/AdoptionFormScreen";
+import TeamScreen from "../screens/TeamScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,14 @@ export default function AppRoutes() {
         component={AdoptionFormScreen}
         options={{
           title: "Formulário de Adoção",
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name="Team"
+        component={TeamScreen}
+        options={{
+          title: "Nossa Equipe",
           headerShown: true,
         }}
       />

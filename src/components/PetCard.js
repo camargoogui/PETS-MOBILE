@@ -6,7 +6,14 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 export default function PetCard({ pet, onAdopt }) {
   return (
     <Card style={styles.card}>
-      <Card.Cover source={pet.image} style={styles.image} />
+      {pet.image ? (
+        <Card.Cover source={pet.image} style={styles.image} />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <MaterialCommunityIcons name="paw" size={50} color="#6B4EFF" />
+          <Paragraph style={styles.noImageText}>Sem foto disponível</Paragraph>
+        </View>
+      )}
       <Card.Content style={styles.content}>
         <Title style={styles.name}>{pet.name}</Title>
         <View style={styles.chipContainer}>
@@ -102,5 +109,15 @@ const styles = StyleSheet.create({
   adoptButton: {
     flex: 1,
     backgroundColor: "#FF6B6B",
+  },
+  imagePlaceholder: {
+    height: 200,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noImageText: {
+    color: "#666",
   },
 });

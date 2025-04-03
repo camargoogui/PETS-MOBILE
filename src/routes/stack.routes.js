@@ -4,6 +4,7 @@ import HomeScreen from "../screens/HomeScreen";
 import PetCatalogScreen from "../screens/PetCatalogScreen";
 import AdoptionFormScreen from "../screens/AdoptionFormScreen";
 import TipsScreen from "../screens/TipsScreen";
+import TeamScreen from "../screens/TeamScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,13 @@ export default function StackRoutes() {
         component={TipsScreen}
         options={{
           title: "Dicas e Cuidados",
+        }}
+      />
+      <Stack.Screen
+        name="Team"
+        component={TeamScreen}
+        options={{
+          title: "Nossa Equipe",
         }}
       />
     </Stack.Navigator>

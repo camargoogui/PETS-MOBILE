@@ -6,18 +6,18 @@
   <table>
     <tr>
       <td align="center">
-        <img src="assets/BannerAPP.png" width="200px" alt="Tela 1"/>
+        <img src="assets/BannerAPP.png" width="400px" alt="Tela 1"/>
       </td>
       <td align="center">
-        <img src="assets/InicioAPP.png" width="200px" alt="Tela 2"/>
+        <img src="assets/InicioAPP.png" width="400px" alt="Tela 2"/>
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="assets/FormAPP.png" width="200px" alt="Tela 3"/>
+        <img src="assets/FormAPP.png" width="400px" alt="Tela 3"/>
       </td>
       <td align="center">
-        <img src="assets/DicasAPP.png" width="200px" alt="Tela 4"/>
+        <img src="assets/DicasAPP.png" width="400px" alt="Tela 4"/>
       </td>
     </tr>
   </table>

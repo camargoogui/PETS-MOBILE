@@ -25,16 +25,14 @@
 
 ## 📝 Descrição
 
-Breve descrição do seu aplicativo aqui.
+O Adota Pet é um aplicativo desenvolvido para facilitar o processo de adoção de animais de estimação. Com uma interface intuitiva e amigável, o app conecta pessoas interessadas em adotar com animais que precisam de um lar amoroso. 
+
+Além de apresentar pets disponíveis para adoção, o aplicativo também oferece dicas importantes sobre cuidados com animais e o processo de adoção responsável, ajudando os futuros tutores a se prepararem adequadamente para essa nova fase.
 
 ## ✨ Funcionalidades
 
-- Funcionalidade 1
-- Funcionalidade 2
-- Funcionalidade 3
-
-## 🚀 Tecnologias
-
-- React Native
-- TypeScript
-- Outras tecnologias...
+- Visualização de pets disponíveis para adoção
+- Formulário de interesse em adoção
+- Dicas e orientações sobre cuidados com animais
+- Processo simplificado de adoção
+- Informações detalhadas sobre cada pet
